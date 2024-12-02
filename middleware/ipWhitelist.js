@@ -21,6 +21,8 @@ const ipWhitelist = (req, res, next) => {
     const forwardedIP = req.headers['x-forwarded-for']?.split(',')[0]?.trim();
     const ipToCheck = forwardedIP || clientIP;
 
+    console.log("ipToCheck :",ipToCheck)
+
     const normalizedIP = ipToCheck.replace(/^::ffff:/, '');
 
     if (!allowedIPs.includes(normalizedIP)) {
