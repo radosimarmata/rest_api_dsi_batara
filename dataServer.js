@@ -31,7 +31,10 @@ const fetchDataFromDatabase = async (dbexist) => {
         'io_log.timestamp',
         'io_log.server_time'
       )
-      .innerJoin('vehicle', 'vehicle.imei', 'io_log.imei');
+      .innerJoin('vehicle', 'vehicle.imei', 'io_log.imei')
+      .innerJoin('egi', 'egi.id', 'vehicle.egi_id')
+      .innerJoin('eq_class', 'eq_class.id', 'egi.eq_class_id')
+      .where('eq_class.id', 3);
 
     if (lastId) {
       console.log(`Fetching data with ID greater than ${lastId.id}`);
