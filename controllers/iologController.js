@@ -1,16 +1,23 @@
 const { db } = require('@config/db');
 const { sendSuccessResponse, sendErrorResponse } = require('@utils/response');
+const moment = require('moment');
 
 const getIoLogs = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 100;
   const offset = (page - 1) * limit;
 
+  const from = req.query.from ? moment(req.query.from).format('YYYY-MM-DD HH:mm:ss') : null;
+  const to = req.query.to ? moment(req.query.to).format('YYYY-MM-DD HH:mm:ss') : null;
+
   try {
-    const totalCountResult = await db('io_log').count('id as total').first();
+    const totalCountQuery = db('io_log').count('id as total').where('is_send', false);
+    if (from) totalCountQuery.where('timestamp', '>=', from);
+    if (to) totalCountQuery.where('timestamp', '<=', to);
+    const totalCountResult = await totalCountQuery.first();
     const totalCount = totalCountResult.total;
 
-    const ioLogs = await db('io_log')
+    const ioLogsQuery = db('io_log')
       .select(
         'id',
         'vehicle_name',
@@ -25,6 +32,16 @@ const getIoLogs = async (req, res) => {
       .limit(limit)
       .offset(offset);
 
+    if(from) ioLogsQuery.where('timestamp', '>=', from);
+    if(to) ioLogsQuery.where('timestamp', '<=', to);
+
+    const ioLogs = await ioLogsQuery;
+
+    const formattedLogs = ioLogs.map(log => ({
+      ...log,
+      timestamp: moment(log.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+    }));
+
     if (ioLogs.length > 0) {
       const idsToUpdate = ioLogs.map(log => log.id);
       await db('io_log')
@@ -32,7 +49,7 @@ const getIoLogs = async (req, res) => {
         .update({ is_send: true });
     }
     return sendSuccessResponse(res, 200, {
-      log : ioLogs,
+      log : formattedLogs,
       pagination: {
         totalCount,
         totalPages: Math.ceil(totalCount / limit),
@@ -47,9 +64,8 @@ const getIoLogs = async (req, res) => {
 
 const getIoLogsNow = async (req, res) => {
   try {
-    const now = new Date();    
-    const fiveSecondsAgo = new Date(now.getTime() - 5000);
-    const formattedFiveSecondsAgo = fiveSecondsAgo.toISOString();
+    const now = moment().utcOffset(8)
+    const fiveSecondsAgo = now.subtract(30, 'seconds').format('YYYY-MM-DD HH:mm:ss');
 
     const ioLogs = await db('io_log')
       .select(
@@ -63,7 +79,7 @@ const getIoLogsNow = async (req, res) => {
         'timestamp',
       )
       .where('is_send', false)
-      .andWhere('server_time', '>=', formattedFiveSecondsAgo);
+      .andWhere('timestamp', '>=', fiveSecondsAgo);
 
     if (ioLogs.length > 0) {
       const idsToUpdate = ioLogs.map(log => log.id);
@@ -71,8 +87,13 @@ const getIoLogsNow = async (req, res) => {
         .whereIn('id', idsToUpdate)
         .update({ is_send: true });
     }
+
+    const formattedLogs = ioLogs.map(log => ({
+      ...log,
+      timestamp: moment(log.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+    }));
     
-    return sendSuccessResponse(res, 200, {log: ioLogs}, 'Logs fetched successfully');
+    return sendSuccessResponse(res, 200, {log: formattedLogs}, 'Logs fetched successfully');
   } catch (error) {
     return sendErrorResponse(res, 500, 'Error fetching Logs', error);
   }
