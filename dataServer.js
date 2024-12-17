@@ -28,6 +28,8 @@ const fetchDataFromDatabase = async (dbexist) => {
         'io_log.latitude',
         'io_log.altitude',
         'io_log.speed',
+        'io_log.angle',
+        'io_log.satellites',
         'io_log.timestamp',
         'io_log.server_time'
       )
