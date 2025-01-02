@@ -16,8 +16,9 @@ router.get('/', ipWhitelist, (req, res) => {
   });
 });
 router.use('/users', ipWhitelist, userRoutes);
-router.use('/auth', authRoutes);
+router.use('/auth', ipWhitelist, authRoutes);
 router.use('/log', ipWhitelist, iologRoutes);
+router.use('/sign', authRoutes);
 router.use('/reports', reportRoutes);
 
 module.exports = router;
