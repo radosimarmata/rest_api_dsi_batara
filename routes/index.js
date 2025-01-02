@@ -2,6 +2,7 @@ const express = require('express');
 const userRoutes = require('./userRoutes');
 const authRoutes = require('./authRoutes');
 const iologRoutes = require('./iologRoutes');
+const reportRoutes = require('./reportRoutes');
 const ipWhitelist = require('@middleware/ipWhitelist');
 
 const router = express.Router();
@@ -15,7 +16,8 @@ router.get('/', ipWhitelist, (req, res) => {
   });
 });
 router.use('/users', ipWhitelist, userRoutes);
-router.use('/auth', ipWhitelist, authRoutes);
+router.use('/auth', authRoutes);
 router.use('/log', ipWhitelist, iologRoutes);
+router.use('/reports', reportRoutes);
 
 module.exports = router;

@@ -34,8 +34,27 @@ const dbsecondary = knex({
   },
 });
 
+const dbconn = (database) => {
+  if (!database) {
+    throw new Error('Database name is required');
+  }
+
+  return knex({
+    client: 'pg',
+    connection: {
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT || 5432,
+      database,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+    },
+  });
+};
+
+
 module.exports = {
   db,
   dbprimary,
-  dbsecondary
+  dbsecondary,
+  dbconn
 }
