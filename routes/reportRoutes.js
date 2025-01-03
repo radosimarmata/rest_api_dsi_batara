@@ -3,7 +3,8 @@ const {
   getUtilizationofAvailability,
   getPhysicalofAvailability,
   getLoginLogout,
-  getActivityDuration
+  getActivityDuration,
+  getStatusDuration
 } = require('@controllers/reportController');
 const authMiddleware = require('@middleware/authMiddleware');
 
@@ -14,5 +15,6 @@ router.get('/physical_of_availability', authMiddleware, getPhysicalofAvailabilit
 router.get('/physical_of_availability', authMiddleware, getPhysicalofAvailability);
 router.get('/login_logout', authMiddleware, getLoginLogout);
 router.get('/activity_duration', authMiddleware, getActivityDuration);
+router.get('/status_duration', authMiddleware, getStatusDuration);
 
 module.exports = router;
