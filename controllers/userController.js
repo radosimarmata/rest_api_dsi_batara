@@ -1,5 +1,6 @@
 const { db } = require('@config/db');
 const { sendSuccessResponse, sendErrorResponse, sendNotFoundResponse } = require('@utils/response');
+const bcrypt = require('bcrypt');
 
 const getUsers = async (req, res) => {
   const { id } = req.query;
@@ -29,10 +30,11 @@ const getUsers = async (req, res) => {
 const createUser = async (req, res) => {
   const { type_user_id, username, password } = req.body;
   try {
+    const hashedPassword = await bcrypt.hash(password, 10);
     const [userId] = await db('user').insert({
       type_user_id,
       username,
-      password,
+      password: hashedPassword,
     }).returning('id');
 
     return sendSuccessResponse(res, 201, { userId }, 'User created successfully');
