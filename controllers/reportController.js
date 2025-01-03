@@ -163,9 +163,9 @@ const getActivityDuration = async (req, res) => {
       'egi_name',
       'activity_name',
       'location_start',
-      'start_time',
+      'start as start_time',
       'location_stop',
-      'stop_time',
+      'stop as stop_time',
       'duration'
     )
     .from('vw_pbi_activity_duration')
